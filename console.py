@@ -2,6 +2,7 @@
 """ Console Module """
 import cmd
 import sys
+import re
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -73,7 +74,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -118,13 +119,45 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+        splitted_args = args.split(' ', 1)
+        class_name = splitted_args[0]
+        params = splitted_args[1] if len(splitted_args) > 1 else ''
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
+        new_instance = HBNBCommand.classes[class_name]()
+        for param in params.split():
+            key, value = self.parse_param(param)
+            if key is not None and value is not None:
+                setattr(new_instance, key, value)
         storage.save()
         print(new_instance.id)
         storage.save()
+
+    def parse_param(self, param):
+        """Parse a parameter and return the key and value."""
+        if '=' not in param:
+            return None, None
+        key, value = param.split('=', 1)
+        if re.match(r'^".*"$', value):
+            value = value[1: -1]
+            value = value.replace('\\"', '"')
+            value = value.replace('_', ' ')
+            return key, value
+        elif '.' in value:
+            try:
+                value = float(value)
+                return key, value
+            except ValueError:
+                return None, None
+        elif value.isdigit():
+            try:
+                value = int(value)
+                return key, value
+            except ValueError:
+                return None, None
+        else:
+            return None, None
 
     def help_create(self):
         """ Help information for the create method """
@@ -272,7 +305,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -280,10 +313,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
@@ -319,6 +352,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
