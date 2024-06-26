@@ -5,3 +5,6 @@ from models.engine.file_storage import FileStorage
 
 storage = FileStorage()
 storage.reload()
+
+from models.place import Place
+from models.state import State

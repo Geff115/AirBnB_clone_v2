@@ -144,13 +144,14 @@ class HBNBCommand(cmd.Cmd):
             value = value.replace('\\"', '"')
             value = value.replace('_', ' ')
             return key, value
-        elif '.' in value:
+        elif re.match(r'^-?\d+\.\d+$', value):
             try:
                 value = float(value)
                 return key, value
             except ValueError:
                 return None, None
-        elif value.isdigit():
+        elif value.isdigit() or (value.startswith('-')
+                                 and value[1:].isdigit()):
             try:
                 value = int(value)
                 return key, value
