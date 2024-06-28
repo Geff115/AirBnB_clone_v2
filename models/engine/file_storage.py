@@ -62,3 +62,18 @@ class FileStorage:
         key = "{}.{}".format(type(obj).__name__, obj.id)
         if key in FileStorage.__objects:
             del FileStorage.__objects[key]
+
+    @property
+    def cities(self):
+        """This method returns a list of City instances with state_id
+        equal to the current State.id
+        """
+        return [city for city in FileStorage.all(City).values()
+                if city.state_id == self.id]
+    @property
+    def reviews(self):
+        """This method returns a list of review instances with
+        place_id equal to the current Place.id"""
+
+        return [review for review in FileStorage.all(Review).values()
+                if review.place_id == self.id]
