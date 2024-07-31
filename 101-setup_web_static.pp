@@ -52,7 +52,7 @@ file { '/data/web_static/current':
 
 exec { 'chown for /data/':
     command => 'chown -R ubuntu:ubuntu /data/',
-    path => '/usr/bin/:/usr/local/bin/:/bin/'
+    path    => '/usr/bin/:/usr/local/bin/:/bin/'
 } ->
 
 file { '/var/www':
@@ -75,7 +75,7 @@ file { '/var/www/html/404.html':
 
 file { '/etc/nginx/sites-available/default':
     ensure  => 'present',
-    content => $nginx_conf
+    content => "The value is ${nginx_conf}"
 } ->
 
 exec { 'nginx restart':
